@@ -19,6 +19,7 @@ search :: Maybe QueryString
        -> Maybe Type
        -> Maybe Lang
        -> Maybe ExternalDomain
+       -> Maybe Overembed
        -> Maybe NCRnd
        -> EitherT ServantError IO SearchResult
 

@@ -22,7 +22,7 @@ runQuery query = flip runReaderT def $ do
   Config{..} <- ask
   ncrnd <- liftIO ncrnd
 
-  lift $ search (Just query) typeParam lang externalDomain ncrnd
+  lift $ search (Just query) typeParam lang externalDomain overembed ncrnd
 
 
 main :: IO ()

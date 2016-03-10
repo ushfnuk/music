@@ -8,6 +8,7 @@ import Types
 
 type CommonParams t = QueryParam "lang" Lang
                    :> QueryParam "external-domain" ExternalDomain
+                   :> QueryParam "overembed" Overembed
                    :> QueryParam "ncrnd" NCRnd
                    :> t
 

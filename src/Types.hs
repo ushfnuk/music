@@ -79,3 +79,12 @@ instance ToText ExternalDomain where
 instance FromText ExternalDomain where
   fromText "music.yandex.ru" = Just YandexDomain
   fromText _ = Nothing
+
+
+newtype Overembed = Overembed { overembed :: Bool } deriving Show
+
+instance ToText Overembed where
+  toText = toText . overembed
+
+instance FromText Overembed where
+  fromText bool = Overembed <$> fromText bool
