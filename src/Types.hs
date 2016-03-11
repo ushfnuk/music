@@ -2,6 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Types where
 
+import Control.Monad (mzero)
 import Data.Aeson
 import Data.Text
 import GHC.Generics
@@ -22,11 +23,37 @@ instance ToJSON Auth
 
 
 data SearchResult = SearchResult
-  { albums :: Object
+  { albums  :: [Album]
+  , artists :: [Artist]
   } deriving (Show, Generic)
 
-instance FromJSON SearchResult
+instance FromJSON SearchResult where
+  parseJSON (Object vs) = SearchResult <$> (vs .: "albums"  >>= (.: "items"))
+                                       <*> (vs .: "artists" >>= (.: "items"))
+  parseJSON _           = mzero
+
 instance ToJSON SearchResult
+
+data Album = Album
+  { id    :: Int
+  , title :: Text
+  , year  :: Text
+  } deriving (Show, Generic)
+
+instance FromJSON Album where
+  parseJSON (Object v) = Album <$> v .: "id"
+                               <*> v .: "title"
+                               <*> v .: "year"
+  parseJSON _          = mzero
+
+instance ToJSON Album
+
+data Artist = Artist
+  { name :: Text
+  } deriving (Show, Generic)
+
+instance FromJSON Artist
+instance ToJSON Artist
 
 
 data Lang = Uk | En | Ru deriving Show
@@ -78,7 +105,7 @@ instance ToText ExternalDomain where
 
 instance FromText ExternalDomain where
   fromText "music.yandex.ru" = Just YandexDomain
-  fromText _ = Nothing
+  fromText _                 = Nothing
 
 
 newtype Overembed = Overembed { overembed :: Bool } deriving Show
