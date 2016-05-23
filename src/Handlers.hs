@@ -2,6 +2,7 @@ module Handlers where
 
 import Control.Monad.Trans.Either
 import Data.Proxy
+import Data.Text
 import Servant.Client
 import Servant.API
 
@@ -9,7 +10,7 @@ import API
 import Types
 
 domain :: String
-domain = "music.yandex.ru"
+domain = unpack $ toText YandexDomain
 
 api :: Proxy MusicAPI
 api = Proxy
@@ -26,4 +27,4 @@ search :: Maybe QueryString
 auth :<|> search = client api baseUrl
 
 baseUrl :: BaseUrl
-baseUrl = BaseUrl Http domain 80
+baseUrl = BaseUrl Https domain 443

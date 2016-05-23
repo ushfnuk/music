@@ -12,6 +12,7 @@ import qualified Data.Text.IO as T
 import Servant.Client (ServantError)
 import System.IO (hSetBuffering, BufferMode(NoBuffering), stdout)
 
+
 import Config
 import Handlers (search)
 import Types (SearchResult, QueryString(..))

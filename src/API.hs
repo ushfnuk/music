@@ -12,7 +12,11 @@ type CommonParams t = QueryParam "lang" Lang
                    :> QueryParam "ncrnd" NCRnd
                    :> t
 
-type AuthAPI   = "api" :> "v2.0" :> "handlers" :> "auth" :> Get '[JSON] Auth
+type AuthAPI = "api"
+            :> "v2.0"
+            :> "handlers"
+            :> "auth"
+            :> Get '[JSON] Auth
 
 type SearchAPI = "handlers"
               :> "music-search.jsx" 
