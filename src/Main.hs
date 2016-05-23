@@ -25,6 +25,9 @@ runQuery query = flip runReaderT def $ do
 
   lift $ search (Just query) typeParam lang externalDomain overembed ncrnd
 
+showError :: ServantError -> IO ()
+showError err = putStrLn $ "Error: " ++ show err
+
 
 main :: IO ()
 main = do
@@ -33,7 +36,8 @@ main = do
   T.putStr "Input search query: "
   query <- T.getLine
 
-  res <- runEitherT . runQuery $ QueryString query
-  case res of
-    Left err -> putStrLn $ "Error: " ++ show err
-    Right s  -> print s
+  res <- runEitherT $ do
+    searchResult <- runQuery $ QueryString query
+    liftIO $ print searchResult
+
+  either showError (const $ return ()) res
