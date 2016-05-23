@@ -37,7 +37,7 @@ instance ToJSON SearchResult
 data Album = Album
   { id    :: Int
   , title :: Text
-  , year  :: Text
+  , year  :: Int
   } deriving (Show, Generic)
 
 instance FromJSON Album where
