@@ -56,7 +56,7 @@ main = do
       mapM_ T.putStrLn $ numerate name 1 arts
 
       T.putStrLn "\nFound albums:"
-      let artistsCount   = length $ arts
+      let artistsCount   = length arts
           startNumber    = artistsCount + 1
           showAlbums alb = mconcat [ title alb
                                    , " ("
