@@ -35,8 +35,9 @@ showError err = putStrLn $ "Error: " ++ show err
 
 numerate :: (Monoid str, IsString str, Enum num, Show num)
          => (a -> str) -> num -> [a] -> [str]
-numerate f start xs = let numbers = fmap ((`mappend` ") ") . fromString . show) [start..]
-                          list    = fmap f xs
+numerate f start xs = let addBrace = (`mappend` ") ") . fromString . show
+                          numbers  = fmap addBrace [start..]
+                          list     = fmap f xs
                       in  zipWith mappend numbers list
 
 
@@ -51,19 +52,18 @@ main = do
     searchResult <- runQuery $ QueryString query
     liftIO $ do
       T.putStrLn "Found artists:"
-      mapM_ T.putStrLn $ numerate name
-                                  1
-                                  (artists searchResult)
+      let arts = artists searchResult
+      mapM_ T.putStrLn $ numerate name 1 arts
 
       T.putStrLn "\nFound albums:"
-      let artistsCount   = length $ artists searchResult
+      let artistsCount   = length $ arts
+          startNumber    = artistsCount + 1
           showAlbums alb = mconcat [ title alb
                                    , " ("
                                    , fromString . show $ year alb
                                    , ")"]
 
-      mapM_ T.putStrLn $ numerate showAlbums
-                                  (artistsCount + 1)
-                                  (albums searchResult)
+      let albs = albums searchResult
+      mapM_ T.putStrLn $ numerate showAlbums startNumber albs
 
   either showError (const $ return ()) res
