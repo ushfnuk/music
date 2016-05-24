@@ -40,12 +40,7 @@ data Album = Album
   , year  :: Int
   } deriving (Show, Generic)
 
-instance FromJSON Album where
-  parseJSON (Object v) = Album <$> v .: "id"
-                               <*> v .: "title"
-                               <*> v .: "year"
-  parseJSON _          = mzero
-
+instance FromJSON Album
 instance ToJSON Album
 
 data Artist = Artist

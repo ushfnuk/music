@@ -9,9 +9,6 @@ import Servant.API
 import API
 import Types
 
-domain :: String
-domain = unpack $ toText YandexDomain
-
 api :: Proxy MusicAPI
 api = Proxy
 
@@ -26,5 +23,7 @@ search :: Maybe QueryString
 
 auth :<|> search = client api baseUrl
 
+{-# INLINE baseUrl #-}
 baseUrl :: BaseUrl
-baseUrl = BaseUrl Https domain 443
+baseUrl = let domain = unpack $ toText YandexDomain
+          in  BaseUrl Https domain 443
