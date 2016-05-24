@@ -32,6 +32,7 @@ runQuery query = flip runReaderT def $ do
 showError :: ServantError -> IO ()
 showError err = putStrLn $ "Error: " ++ show err
 
+
 numerate :: (a -> String) -> Int -> [a] -> [String]
 numerate f start xs = let numbers = fmap ((++") ") . show) [start..]
                           list    = fmap f xs
@@ -49,18 +50,19 @@ main = do
     searchResult <- runQuery $ QueryString query
     liftIO $ do
       T.putStrLn "Found artists:"
-      mapM_ putStrLn $ numerate (\art -> T.unpack $ name art)
+      let showArtist art = T.unpack $ name art
+      mapM_ putStrLn $ numerate showArtist
                                 1
                                 (artists searchResult)
 
       T.putStrLn "\nFound albums:"
-      let artistsCount = length $ artists searchResult
-      mapM_ putStrLn $ numerate (\alb -> mconcat [
-                                           T.unpack $ title alb
-                                           , " ("
-                                           , show $ year alb
-                                           , ")"
-                                         ])
+      let artistsCount   = length $ artists searchResult
+          showAlbums alb = mconcat [ T.unpack $ title alb
+                                   , " ("
+                                   , show $ year alb
+                                   , ")"]
+
+      mapM_ putStrLn $ numerate showAlbums
                                 (artistsCount + 1)
                                 (albums searchResult)
 
