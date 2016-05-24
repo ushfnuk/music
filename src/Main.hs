@@ -9,7 +9,7 @@ import Control.Monad.Trans.Either (EitherT, runEitherT)
 import Control.Monad.Trans.Reader (runReaderT, ask)
 
 import Data.Default (def)
-import qualified Data.Text    as T
+import Data.String (IsString(..))
 import qualified Data.Text.IO as T
 import System.IO (hSetBuffering, BufferMode(NoBuffering), stdout)
 
@@ -33,10 +33,11 @@ showError :: ServantError -> IO ()
 showError err = putStrLn $ "Error: " ++ show err
 
 
-numerate :: (a -> String) -> Int -> [a] -> [String]
-numerate f start xs = let numbers = fmap ((++") ") . show) [start..]
+numerate :: (Monoid str, IsString str, Enum num, Show num)
+         => (a -> str) -> num -> [a] -> [str]
+numerate f start xs = let numbers = fmap ((`mappend` ") ") . fromString . show) [start..]
                           list    = fmap f xs
-                      in  zipWith (++) numbers list
+                      in  zipWith mappend numbers list
 
 
 main :: IO ()
@@ -50,20 +51,19 @@ main = do
     searchResult <- runQuery $ QueryString query
     liftIO $ do
       T.putStrLn "Found artists:"
-      let showArtist art = T.unpack $ name art
-      mapM_ putStrLn $ numerate showArtist
-                                1
-                                (artists searchResult)
+      mapM_ T.putStrLn $ numerate name
+                                  1
+                                  (artists searchResult)
 
       T.putStrLn "\nFound albums:"
       let artistsCount   = length $ artists searchResult
-          showAlbums alb = mconcat [ T.unpack $ title alb
+          showAlbums alb = mconcat [ title alb
                                    , " ("
-                                   , show $ year alb
+                                   , fromString . show $ year alb
                                    , ")"]
 
-      mapM_ putStrLn $ numerate showAlbums
-                                (artistsCount + 1)
-                                (albums searchResult)
+      mapM_ T.putStrLn $ numerate showAlbums
+                                  (artistsCount + 1)
+                                  (albums searchResult)
 
   either showError (const $ return ()) res
