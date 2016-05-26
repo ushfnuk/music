@@ -45,6 +45,7 @@ instance FromJSON Album where
                                 <*> vs .: "title"
                                 <*> vs .: "year"
   parseJSON _           = mzero
+
 instance ToJSON Album
 
 data Artist = Artist
