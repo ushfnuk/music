@@ -35,19 +35,27 @@ instance FromJSON SearchResult where
 instance ToJSON SearchResult
 
 data Album = Album
-  { id    :: Int
-  , title :: Text
-  , year  :: Int
+  { albumId :: Int
+  , title   :: Text
+  , year    :: Int
   } deriving (Show, Generic)
 
-instance FromJSON Album
+instance FromJSON Album where
+  parseJSON (Object vs) = Album <$> vs .: "id"
+                                <*> vs .: "title"
+                                <*> vs .: "year"
+  parseJSON _           = mzero
 instance ToJSON Album
 
 data Artist = Artist
-  { name :: Text
+  { artistId :: Int
+  , name     :: Text
   } deriving (Show, Generic)
 
-instance FromJSON Artist
+instance FromJSON Artist where
+  parseJSON (Object vs) = Artist <$> vs .: "id"
+                                 <*> vs .: "name"
+  parseJSON _           = mzero
 instance ToJSON Artist
 
 

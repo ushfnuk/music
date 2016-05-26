@@ -41,6 +41,29 @@ numerate f start xs = let addBrace = (`mappend` ") ") . fromString . show
                       in  zipWith mappend numbers list
 
 
+choosePoint :: SearchResult -> IO ()
+choosePoint res = flip runReaderT res $ do
+  SearchResult{..} <- ask
+
+  liftIO $ do
+    T.putStrLn "\nFound artists:"
+    mapM_ T.putStrLn $ numerate name 1 artists
+
+    T.putStrLn "\nFound albums:"
+    let artistsCount     = length artists
+        startNumber      = artistsCount + 1
+        showAlbums album = mconcat [ title album
+                                   , " ("
+                                   , fromString . show $ year album
+                                   , ")"]
+
+    mapM_ T.putStrLn $ numerate showAlbums startNumber albums
+
+    T.putStr "\nChoose point: "
+    point <- T.getLine
+    T.putStrLn point
+
+
 main :: IO ()
 main = do
   hSetBuffering stdout NoBuffering
@@ -50,20 +73,6 @@ main = do
 
   res <- runEitherT $ do
     searchResult <- runQuery $ QueryString query
-    liftIO $ do
-      T.putStrLn "Found artists:"
-      let arts = artists searchResult
-      mapM_ T.putStrLn $ numerate name 1 arts
-
-      T.putStrLn "\nFound albums:"
-      let artistsCount   = length arts
-          startNumber    = artistsCount + 1
-          showAlbums alb = mconcat [ title alb
-                                   , " ("
-                                   , fromString . show $ year alb
-                                   , ")"]
-
-      let albs = albums searchResult
-      mapM_ T.putStrLn $ numerate showAlbums startNumber albs
+    liftIO $ choosePoint searchResult
 
   either showError (const $ return ()) res
