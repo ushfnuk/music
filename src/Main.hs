@@ -9,6 +9,8 @@ import Control.Monad.Trans.Reader (runReaderT, ask)
 
 import Data.String (IsString(..))
 import qualified Data.Text.IO as T
+
+import System.Exit (ExitCode(..), exitWith)
 import System.IO (hSetBuffering, BufferMode(NoBuffering), stdout)
 
 import Servant.Client (ServantError)
@@ -19,8 +21,10 @@ import Types ( SearchResult(..), QueryString(..)
              , Album(..), Artist(..))
 
 
-showError :: ServantError -> IO ()
-showError err = putStrLn $ "Error: " ++ show err
+showError :: ServantError -> IO ExitCode
+showError err = do
+  putStrLn $ "Error: " ++ show err
+  return $ ExitFailure 1
 
 
 numerate :: (Monoid str, IsString str)
@@ -68,4 +72,4 @@ main = do
 
     liftIO $ choosePoint searchResult
 
-  either showError (const $ return ()) res
+  either showError (const $ return ExitSuccess) res >>= exitWith
