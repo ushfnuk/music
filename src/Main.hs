@@ -4,11 +4,9 @@
 module Main where
 
 import Control.Monad.IO.Class (liftIO)
-import Control.Monad.Trans.Class (lift)
-import Control.Monad.Trans.Either (EitherT, runEitherT)
+import Control.Monad.Trans.Either (runEitherT)
 import Control.Monad.Trans.Reader (runReaderT, ask)
 
-import Data.Default (def)
 import Data.String (IsString(..))
 import qualified Data.Text.IO as T
 import System.IO (hSetBuffering, BufferMode(NoBuffering), stdout)
@@ -16,25 +14,17 @@ import System.IO (hSetBuffering, BufferMode(NoBuffering), stdout)
 import Servant.Client (ServantError)
 
 
-import Config
-import Handlers (search)
-import Types (SearchResult(..), QueryString(..), Album(..), Artist(..))
-
-
-runQuery :: QueryString -> EitherT ServantError IO SearchResult
-runQuery query = flip runReaderT def $ do
-  Config{..} <- ask
-  ncrnd <- liftIO ncrnd
-
-  lift $ search (Just query) typeParam lang externalDomain overembed ncrnd
+import Handlers (runAuth, runQuery)
+import Types ( SearchResult(..), QueryString(..)
+             , Album(..), Artist(..))
 
 
 showError :: ServantError -> IO ()
 showError err = putStrLn $ "Error: " ++ show err
 
 
-numerate :: (Monoid str, IsString str, Enum num, Show num)
-         => (a -> str) -> num -> [a] -> [str]
+numerate :: (Monoid str, IsString str)
+         => (a -> str) -> Int -> [a] -> [str]
 numerate f start xs = let addBrace = (`mappend` ") ") . fromString . show
                           numbers  = fmap addBrace [start..]
                           list     = fmap f xs
@@ -72,7 +62,10 @@ main = do
   query <- T.getLine
 
   res <- runEitherT $ do
-    searchResult <- runQuery $ QueryString query
+    auth <- runAuth
+
+    searchResult <- runQuery auth (QueryString query)
+
     liftIO $ choosePoint searchResult
 
   either showError (const $ return ()) res

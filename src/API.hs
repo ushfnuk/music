@@ -13,15 +13,16 @@ type CommonParams t = QueryParam "lang" Lang
                    :> t
 
 type AuthAPI = "api"
-            :> "v2.0"
+            :> "v2.1"
             :> "handlers"
             :> "auth"
-            :> Get '[JSON] Auth
+            :> CommonParams (Get '[JSON] Auth)
 
 type SearchAPI = "handlers"
               :> "music-search.jsx" 
               :> QueryParam "text" QueryString
               :> QueryParam "type" Type
+              :> Header "Cookie" CookieString
               :> CommonParams (Get '[JSON] SearchResult)
 
 

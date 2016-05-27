@@ -12,9 +12,9 @@ data Auth = Auth
   { csrf      :: Text
   , device_id :: Text
   , logged    :: Bool
-  , premium   :: Maybe Text 
+  , premium   :: Bool
   , invalid   :: Bool
-  --, timestamp :: Int
+  , timestamp :: Int
   } deriving (Show, Generic)
 
 
@@ -72,6 +72,18 @@ instance FromText Lang where
   fromText "ru" = Just Ru
   fromText "en" = Just En
   fromText _    = Nothing
+
+
+newtype CookieString = CookieString { cookie :: Text } deriving Show
+
+instance ToText CookieString where
+  toText = cookie
+
+instance FromText CookieString where
+  fromText = Just . CookieString
+
+mkCookie :: Auth -> CookieString
+mkCookie = CookieString . device_id
 
 
 newtype QueryString = QueryString { query :: Text } deriving Show
