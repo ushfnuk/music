@@ -5,10 +5,12 @@ module Main where
 
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Trans.Either (runEitherT)
-import Control.Monad.Trans.Reader (runReaderT, ask)
+import Control.Monad.Trans.Reader (ReaderT, runReaderT, ask)
 
 import Data.String (IsString(..))
 import qualified Data.Text.IO as T
+
+import Safe (atMay)
 
 import System.Exit (ExitCode(..), exitWith)
 import System.IO (hSetBuffering, BufferMode(NoBuffering), stdout)
@@ -35,27 +37,47 @@ numerate f start xs = let addBrace = (`mappend` ") ") . fromString . show
                       in  zipWith mappend numbers list
 
 
-choosePoint :: SearchResult -> IO ()
-choosePoint res = flip runReaderT res $ do
+showInfo :: SearchResult -> IO ()
+showInfo = runReaderT $ do
   SearchResult{..} <- ask
 
   liftIO $ do
-    T.putStrLn "\nFound artists:"
-    mapM_ T.putStrLn $ numerate name 1 artists
-
-    T.putStrLn "\nFound albums:"
     let artistsCount     = length artists
         startNumber      = artistsCount + 1
         showAlbums album = mconcat [ title album
                                    , " ("
                                    , fromString . show $ year album
                                    , ")"]
+        numeratedArtists = numerate name 1 artists
+        numeratedAlbums  = numerate showAlbums startNumber albums
 
-    mapM_ T.putStrLn $ numerate showAlbums startNumber albums
+    T.putStrLn "\nFound artists:"
+    mapM_ T.putStrLn numeratedArtists
 
-    T.putStr "\nChoose point: "
-    point <- T.getLine
-    T.putStrLn point
+    T.putStrLn "\nFound albums:"
+
+    mapM_ T.putStrLn numeratedAlbums
+
+  choosePoint
+
+
+choosePoint :: ReaderT SearchResult IO ()
+choosePoint = do
+  SearchResult{..} <- ask
+
+  liftIO $ T.putStr "\nChoose point: "
+  point <- liftIO readLn
+
+  let safePrint xs i = maybe ((liftIO $ T.putStrLn "Point is out of bounds! Please try again!")
+                              >> choosePoint)
+                             (liftIO . print)
+                             (xs `atMay` i)
+      artistsCount = length artists
+      startNumber  = artistsCount + 1
+
+  if point > artistsCount
+    then safePrint albums (point - startNumber)
+    else safePrint artists (point - 1)
 
 
 main :: IO ()
@@ -68,8 +90,8 @@ main = do
   res <- runEitherT $ do
     auth <- runAuth
 
-    searchResult <- runQuery auth (QueryString query)
+    searchResult <- runQuery auth $ QueryString query
 
-    liftIO $ choosePoint searchResult
+    liftIO $ showInfo searchResult
 
   either showError (const $ return ExitSuccess) res >>= exitWith
