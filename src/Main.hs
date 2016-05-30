@@ -68,15 +68,15 @@ choosePoint = do
   liftIO $ T.putStr "\nChoose point: "
   point <- liftIO readLn
 
-  let safePrint xs i = maybe ((liftIO $ T.putStrLn "Point is out of bounds! Please try again!")
-                              >> choosePoint)
+  let failCase = liftIO $ T.putStrLn "Point is out of bounds! Please try again!"
+      safePrint xs i = maybe (failCase >> choosePoint)
                              (liftIO . print)
                              (xs `atMay` i)
       artistsCount = length artists
       startNumber  = artistsCount + 1
 
   if point > artistsCount
-    then safePrint albums (point - startNumber)
+    then safePrint albums  (point - startNumber)
     else safePrint artists (point - 1)
 
 
