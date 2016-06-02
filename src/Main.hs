@@ -55,7 +55,6 @@ showInfo = runReaderT $ do
     mapM_ T.putStrLn numeratedArtists
 
     T.putStrLn "\nFound albums:"
-
     mapM_ T.putStrLn numeratedAlbums
 
   choosePoint
